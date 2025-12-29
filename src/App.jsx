@@ -1,59 +1,73 @@
-import { useState, useEffect } from 'react'; // Passo 1: Importar o useEffect
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import KpiCard from './components/KpiCard';
 import './App.css';
 
-// Assumindo que sua API está rodando em http://localhost:5000
-// Se for outra porta, trocaremos aqui.
-const API_BASE_URL = 'http://localhost:5000/api'; 
+// A URL base da sua API.
+const API_URL = 'https://localhost:444/api/v1';
 
 function App() {
+  // O estado agora começa com 0. A API que vai preenchê-los.
   const [kpis, setKpis] = useState({
-    activeOrders: 0, // Valor inicial agora é 0
+    activeOrders: 0,
     cancelledOrders: 0,
     deliveredToday: 0,
   });
+  
+  // Este estado vai guardar mensagens de erro, se acontecerem.
+  const [error, setError] = useState('');
 
-  // Passo 2: Usar o useEffect para buscar os dados
+  // useEffect vai rodar uma vez, quando o componente for montado.
   useEffect(() => {
-    // Função para buscar os dados do dashboard
-    const fetchDashboardData = async () => {
+    // Função que busca os dados da API.
+    const fetchDashboardMetrics = async () => {
       try {
-        // Exemplo de como buscaríamos os dados.
-        // Vamos precisar confirmar os endpoints exatos da sua API.
-        // Por enquanto, vamos simular uma chamada.
-        console.log("Buscando dados da API...");
+        setError(''); // Limpa erros anteriores
+        // Faz a chamada GET para o novo endpoint otimizado.
+        const response = await axios.get(`${API_URL}/Dashboard/metrics`);
+        
+        // Atualiza o estado com os dados recebidos da API. Simples e direto!
+        setKpis(response.data);
 
-        // Simulação de uma resposta da API após 1 segundo
-        setTimeout(() => {
-          const fakeApiData = {
-            activeOrders: 182,
-            cancelledOrders: 21,
-            deliveredToday: 45,
-          };
-          setKpis(fakeApiData); // Atualiza o estado com os dados "recebidos"
-          console.log("Dados recebidos e estado atualizado!", fakeApiData);
-        }, 1000);
-
-      } catch (error) {
-        console.error("Erro ao buscar dados do dashboard:", error);
+      } catch (err) {
+        console.error("Erro ao buscar métricas da API:", err);
+        // Se der erro (API desligada, CORS, etc), guardamos a mensagem.
+        setError('Não foi possível carregar os dados do dashboard. Verifique se a API está rodando e o CORS está configurado.');
       }
     };
 
-    fetchDashboardData(); // Executa a função
-  }, []); // Passo 3: O array de dependências vazio
+    fetchDashboardMetrics(); // Executa a função.
 
+  }, []); // O array vazio garante que isso rode apenas uma vez.
+
+  // Estilos para organizar a página.
   const appStyle = {
-    padding: '20px'
+    padding: '20px',
+    fontFamily: 'sans-serif',
   };
 
   const dashboardStyle = {
     display: 'flex',
     flexDirection: 'row',
+    flexWrap: 'wrap',
+  };
+
+  const errorStyle = {
+    color: 'red',
+    backgroundColor: '#ffeeee',
+    border: '1px solid red',
+    padding: '10px',
+    borderRadius: '5px',
+    marginTop: '20px',
   };
 
   return (
     <div style={appStyle}>
       <h1>Painel Administrativo FakeStore</h1>
+
+      {/* Se houver uma mensagem de erro, mostre-a na tela. */}
+      {error && <div style={errorStyle}>{error}</div>}
+
       <div style={dashboardStyle}>
         <KpiCard title="Pedidos Ativos" value={kpis.activeOrders} />
         <KpiCard title="Pedidos Cancelados" value={kpis.cancelledOrders} />
