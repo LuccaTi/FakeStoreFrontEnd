@@ -25,6 +25,7 @@ function Layout() {
       <nav style={navStyle}>
         <Link to="/" style={linkStyle}>Dashboard</Link>
         <Link to="/orders" style={linkStyle}>Pedidos</Link>
+        <Link to="/customers" style={linkStyle}>Clientes</Link>
       </nav>
 
       <main style={mainContentStyle}>

@@ -6,6 +6,8 @@ import Layout from './components/Layout.jsx';
 import App from './App.jsx';
 import OrdersPage from './pages/OrdersPage.jsx';
 import OrderDetailPage from './pages/OrderDetailPage.jsx'; // 1. Importa a nova página
+import CustomersPage from './pages/CustomersPage.jsx';
+import CustomerDetailPage from './pages/CustomerDetailPage.jsx';
 
 import './index.css';
 
@@ -26,6 +28,14 @@ const router = createBrowserRouter([
         path: "orders/:orderId", // O ":orderId" é um parâmetro que captura o ID da URL
         element: <OrderDetailPage />,
       },
+      {
+        path: "customers",
+        element: <CustomersPage />,
+      },
+      {
+        path: "customers/:customerId",
+        element: <CustomerDetailPage />,
+      }
     ],
   },
 ]);
