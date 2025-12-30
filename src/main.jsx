@@ -8,6 +8,8 @@ import OrdersPage from './pages/OrdersPage.jsx';
 import OrderDetailPage from './pages/OrderDetailPage.jsx'; // 1. Importa a nova página
 import CustomersPage from './pages/CustomersPage.jsx';
 import CustomerDetailPage from './pages/CustomerDetailPage.jsx';
+import ProductsPage from './pages/ProductsPage.jsx';
+import ProductDetailPage from './pages/ProductDetailPage.jsx';
 
 import './index.css';
 
@@ -35,6 +37,14 @@ const router = createBrowserRouter([
       {
         path: "customers/:customerId",
         element: <CustomerDetailPage />,
+      },
+      {
+        path: "products",
+        element: <ProductsPage />,
+      },
+      {
+        path: "products/:productId",
+        element: <ProductDetailPage />,
       }
     ],
   },
