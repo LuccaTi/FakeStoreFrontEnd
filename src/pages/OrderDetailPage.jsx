@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 
 function OrderDetailPage() {
@@ -68,7 +68,7 @@ function OrderDetailPage() {
       {/* Seção de Informações Gerais */}
       <div style={{ marginTop: '20px', lineHeight: '1.8' }}>
         <p><strong>Data do Pedido:</strong> {new Date(order.orderDate).toLocaleString('pt-BR')}</p>
-        <p><strong>ID do Cliente:</strong> {order.customerId}</p>
+        <p><strong>ID do Cliente:</strong> <Link to={`/customers/${order.customerId}`}>{order.customerId}</Link></p>
         <p><strong>Status:</strong> {order.isActive ? 'Ativo' : 'Cancelado'}</p>
         {new Date(order.deliveredDate).getFullYear() > 1 && (
           <p><strong>Data da Entrega:</strong> {new Date(order.deliveredDate).toLocaleString('pt-BR')}</p>
@@ -89,7 +89,7 @@ function OrderDetailPage() {
           {/* Mapeamos a lista de orderItems, que está dentro do nosso objeto 'order' */}
           {order.orderItems && order.orderItems.map(item => (
             <tr key={item.productId}>
-              <td style={tdStyle}>{item.productId}</td>
+              <td style={tdStyle}><Link to={`/products/${item.productId}`}>{item.productId}</Link></td>
               <td style={tdStyle}>{item.quantity}</td>
               <td style={tdStyle}>R$ {item.totalPrice.toFixed(2)}</td>
             </tr>

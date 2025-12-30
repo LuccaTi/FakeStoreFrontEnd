@@ -67,7 +67,7 @@ function OrdersPage() {
             <tr key={order.id} style={{ cursor: 'pointer' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
               {/* 2. Cada célula agora contém um Link */}
               <td style={cellStyle}><Link to={`/orders/${order.id}`} style={linkStyle}>{order.id}</Link></td>
-              <td style={cellStyle}><Link to={`/orders/${order.id}`} style={linkStyle}>{order.customerId}</Link></td>
+              <td style={cellStyle}><Link to={`/customers/${order.customerId}`} style={linkStyle}>{order.customerId}</Link></td>
               <td style={cellStyle}><Link to={`/orders/${order.id}`} style={linkStyle}>{new Date(order.orderDate).toLocaleDateString('pt-BR')}</Link></td>
               <td style={cellStyle}><Link to={`/orders/${order.id}`} style={linkStyle}>{order.isActive ? 'Ativo' : 'Cancelado'}</Link></td>
             </tr>
