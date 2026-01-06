@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link as RouterLink } from 'react-router-dom'; // 1. Renomeia o Link do Router
-import axios from 'axios';
+import { useState, useEffect } from "react";
+import { useParams, Link as RouterLink } from "react-router-dom"; // 1. Renomeia o Link do Router
+import axios from "axios";
+import { getStatusProps } from "../utils/statusUtils";
 
 // --- Importações do Material-UI ---
 import {
@@ -15,27 +16,29 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography
-} from '@mui/material';
+  Typography,
+} from "@mui/material";
 
 function OrderDetailPage() {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const API_URL = 'https://localhost:444/api/v1';
+  const API_URL = "https://localhost:444/api/v1";
 
   useEffect(() => {
     // A lógica de busca continua a mesma, usando o endpoint com itens
     const fetchOrderDetails = async () => {
       try {
         setLoading(true);
-        setError('');
-        const response = await axios.get(`${API_URL}/Order/${orderId}/with-order-items`);
+        setError("");
+        const response = await axios.get(
+          `${API_URL}/Order/${orderId}/with-order-items`
+        );
         setOrder(response.data);
       } catch (err) {
-        setError('Não foi possível carregar os detalhes do pedido.');
+        setError("Não foi possível carregar os detalhes do pedido.");
       } finally {
         setLoading(false);
       }
@@ -45,7 +48,12 @@ function OrderDetailPage() {
     }
   }, [orderId]);
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+  if (loading)
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
   if (error) return <Typography color="error">{error}</Typography>;
   if (!order) return <Typography>Pedido não encontrado.</Typography>;
 
@@ -57,35 +65,54 @@ function OrderDetailPage() {
 
       {/* 3. Card de Detalhes Gerais */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>Informações Gerais</Typography>
+        <Typography variant="h6" gutterBottom>
+          Informações Gerais
+        </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <Typography variant="body1"><strong>Data do Pedido:</strong> {new Date(order.orderDate).toLocaleString('pt-BR')}</Typography>
+            <Typography variant="body1">
+              <strong>Data do Pedido:</strong>{" "}
+              {new Date(order.orderDate).toLocaleString("pt-BR")}
+            </Typography>
           </Grid>
           <Grid item xs={12} sm={6}>
             <Typography variant="body1">
-              <strong>ID do Cliente:</strong>{' '}
-              <Link component={RouterLink} to={`/customers/${order.customerId}`}>{order.customerId}</Link>
+              <strong>ID do Cliente:</strong>{" "}
+              <Link
+                component={RouterLink}
+                to={`/customers/${order.customerId}`}
+              >
+                {order.customerId}
+              </Link>
             </Typography>
           </Grid>
           <Grid item xs={12} sm={6}>
-             <Typography variant="body1">
-               <strong>Status:</strong>{' '}
-               <Typography component="span" color={order.isActive ? 'green' : 'red'} sx={{ fontWeight: 'bold' }}>
-                 {order.isActive ? 'Ativo' : 'Cancelado'}
-               </Typography>
+            <Typography variant="body1">
+              <strong>Status:</strong>{" "}
+              <Typography
+                component="span"
+                color={getStatusProps(order.orderStatus).color}
+                sx={{ fontWeight: "bold" }}
+              >
+                {getStatusProps(order.orderStatus).text}
+              </Typography>
             </Typography>
           </Grid>
           {new Date(order.deliveredDate).getFullYear() > 1 && (
-             <Grid item xs={12} sm={6}>
-               <Typography variant="body1"><strong>Data da Entrega:</strong> {new Date(order.deliveredDate).toLocaleString('pt-BR')}</Typography>
-             </Grid>
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body1">
+                <strong>Data da Entrega:</strong>{" "}
+                {new Date(order.deliveredDate).toLocaleString("pt-BR")}
+              </Typography>
+            </Grid>
           )}
         </Grid>
       </Paper>
-      
+
       {/* 4. Tabela de Itens do Pedido */}
-      <Typography variant="h5" gutterBottom>Itens do Pedido</Typography>
+      <Typography variant="h5" gutterBottom>
+        Itens do Pedido
+      </Typography>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -99,10 +126,17 @@ function OrderDetailPage() {
             {order.orderItems.map((item) => (
               <TableRow key={item.productId} hover>
                 <TableCell>
-                   <Link component={RouterLink} to={`/products/${item.productId}`}>{item.productId}</Link>
+                  <Link
+                    component={RouterLink}
+                    to={`/products/${item.productId}`}
+                  >
+                    {item.productId}
+                  </Link>
                 </TableCell>
                 <TableCell>{item.quantity}</TableCell>
-                <TableCell align="right">R$ {item.totalPrice.toFixed(2)}</TableCell>
+                <TableCell align="right">
+                  R$ {item.totalPrice.toFixed(2)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
