@@ -84,8 +84,8 @@ function CustomersPage() {
                 sx={{ cursor: 'pointer' }}
               >
                 <TableCell>{customer.id}</TableCell>
-                <TableCell>{customer.firstName}</TableCell>
-                <TableCell>{customer.lastName}</TableCell>
+                <TableCell style={{textTransform: 'capitalize'}}>{customer.firstName}</TableCell>
+                <TableCell style={{textTransform: 'capitalize'}}>{customer.lastName}</TableCell>
                 <TableCell>{customer.email}</TableCell>
                 <TableCell>{customer.phone}</TableCell>
                 <TableCell>
