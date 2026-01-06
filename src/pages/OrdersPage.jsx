@@ -24,8 +24,12 @@ function OrdersPage() {
         setLoading(true);
         setError('');
         const response = await axios.get(`${API_URL}/Order/active-or-not`);
-        setAllOrders(response.data);
-        setFilteredOrders(response.data);
+        // Ordena os pedidos do mais recente para o mais antigo
+        const sortedOrders = response.data.sort((a, b) => 
+          new Date(b.orderDate) - new Date(a.orderDate)
+        );
+        setAllOrders(sortedOrders);
+        setFilteredOrders(sortedOrders);
       } catch (err) {
         setError('Não foi possível carregar a lista de pedidos.');
       } finally {
@@ -37,18 +41,24 @@ function OrdersPage() {
 
   // --- LÓGICA DE FILTRO ATUALIZADA ---
   useEffect(() => {
+    let orders = [];
+    
     if (filter === 'all') {
-      setFilteredOrders(allOrders);
+      orders = [...allOrders];
     } else if (filter === 'active') {
-      const activeOrders = allOrders.filter(o => o.orderStatus !== 'Finished' && o.orderStatus !== 'Cancelled');
-      setFilteredOrders(activeOrders);
-    } else if (filter === 'finished') { // 1. NOVA LÓGICA DE FILTRO
-      const finishedOrders = allOrders.filter(o => o.orderStatus === 'Finished');
-      setFilteredOrders(finishedOrders);
+      orders = allOrders.filter(o => o.orderStatus !== 'Finished' && o.orderStatus !== 'Cancelled');
+    } else if (filter === 'finished') {
+      orders = allOrders.filter(o => o.orderStatus === 'Finished');
     } else if (filter === 'cancelled') {
-      const cancelledOrders = allOrders.filter(o => o.orderStatus === 'Cancelled');
-      setFilteredOrders(cancelledOrders);
+      orders = allOrders.filter(o => o.orderStatus === 'Cancelled');
     }
+    
+    // Garante que a ordenação seja mantida após filtragem
+    const sortedOrders = orders.sort((a, b) => 
+      new Date(b.orderDate) - new Date(a.orderDate)
+    );
+    
+    setFilteredOrders(sortedOrders);
   }, [filter, allOrders]);
 
   if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
