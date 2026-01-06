@@ -1,23 +1,37 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // 1. NOVO: Hook para navegação programática
 import axios from 'axios';
 
+// --- Importações do Material-UI ---
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  CircularProgress, // Um "spinner" de carregamento mais bonito
+  Paper, // Um container com fundo branco e sombra
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography
+} from '@mui/material';
+
 function OrdersPage() {
+  const navigate = useNavigate(); // 2. Inicializa o hook de navegação
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
-  // --- 1. NOVO ESTADO PARA O FILTRO ---
-  // Guardará o status do filtro: 'all', 'active', ou 'cancelled'
-  const [filter, setFilter] = useState('all'); 
+  const [filter, setFilter] = useState('all');
 
   const API_URL = 'https://localhost:444/api/v1';
 
-  // --- 2. useEffect AGORA DEPENDE DO FILTRO ---
   useEffect(() => {
+    // ... (A lógica de fetchOrders continua exatamente a mesma) ...
     const fetchOrders = async () => {
-      // Constrói a URL da API baseada no filtro ativo
-      let apiUrl = `${API_URL}/Order/active-or-not`; // Padrão: buscar todos
+      let apiUrl = `${API_URL}/Order/active-or-not`;
       if (filter === 'active') {
         apiUrl = `${API_URL}/Order`;
       } else if (filter === 'cancelled') {
@@ -27,72 +41,87 @@ function OrdersPage() {
       try {
         setLoading(true);
         setError('');
-        console.log(`Buscando dados de: ${apiUrl}`); // Log para depuração
         const response = await axios.get(apiUrl);
         setOrders(response.data);
       } catch (err) {
         console.error("Erro ao buscar pedidos:", err);
-        setError(`Não foi possível carregar a lista de pedidos (filtro: ${filter}).`);
+        setError(`Não foi possível carregar a lista de pedidos.`);
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [filter]); // O efeito agora re-executa toda vez que 'filter' mudar
+  }, [filter]);
 
-  if (loading) return <div>Carregando lista de pedidos...</div>;
-  if (error) return <div style={{ color: 'red' }}>{error}</div>;
+  // 3. Renderização de Carregamento e Erro com componentes MUI
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const linkStyle = { textDecoration: 'none', color: 'inherit', display: 'block', padding: '10px' };
-  const cellStyle = { border: '1px solid #ddd', padding: '0' };
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
   
-  // --- 3. ESTILOS PARA OS BOTÕES DE FILTRO ---
-  const filterButtonStyle = (buttonFilter) => ({
-    padding: '8px 16px',
-    fontSize: '14px',
-    cursor: 'pointer',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    marginRight: '10px',
-    backgroundColor: filter === buttonFilter ? '#0d6efd' : '#f8f9fa', // Destaque para o botão ativo
-    color: filter === buttonFilter ? 'white' : 'black',
-  });
+  // 4. Função para navegar para os detalhes do pedido
+  const handleRowClick = (orderId) => {
+    navigate(`/orders/${orderId}`);
+  };
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Lista de Pedidos</h2>
-        {/* --- 4. OS BOTÕES DE FILTRO --- */}
-        <div>
-          <button style={filterButtonStyle('all')} onClick={() => setFilter('all')}>Todos</button>
-          <button style={filterButtonStyle('active')} onClick={() => setFilter('active')}>Ativos</button>
-          <button style={filterButtonStyle('cancelled')} onClick={() => setFilter('cancelled')}>Cancelados</button>
-        </div>
-      </div>
+    <Box>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" component="h1">
+          Lista de Pedidos
+        </Typography>
+        {/* 5. Grupo de botões do MUI */}
+        <ButtonGroup variant="outlined" aria-label="outlined primary button group">
+          <Button variant={filter === 'all' ? 'contained' : 'outlined'} onClick={() => setFilter('all')}>Todos</Button>
+          <Button variant={filter === 'active' ? 'contained' : 'outlined'} onClick={() => setFilter('active')}>Ativos</Button>
+          <Button variant={filter === 'cancelled' ? 'contained' : 'outlined'} onClick={() => setFilter('cancelled')}>Cancelados</Button>
+        </ButtonGroup>
+      </Box>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
-        {/* O resto da sua tabela permanece exatamente igual */}
-        <thead>
-          <tr style={{ backgroundColor: '#f2f2f2' }}>
-            <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>ID Pedido</th>
-            <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>ID Cliente</th>
-            <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Data do Pedido</th>
-            <th style={{ padding: '12px', border: '1px solid #ddd', textAlign: 'left' }}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map(order => (
-            <tr key={order.id} style={{ cursor: 'pointer' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-              <td style={cellStyle}><Link to={`/orders/${order.id}`} style={linkStyle}>{order.id}</Link></td>
-              <td style={cellStyle}><Link to={`/customers/${order.customerId}`} style={{...linkStyle, color: '#0d6efd'}}>{order.customerId}</Link></td>
-              <td style={cellStyle}><Link to={`/orders/${order.id}`} style={linkStyle}>{new Date(order.orderDate).toLocaleDateString('pt-BR')}</Link></td>
-              <td style={cellStyle}><Link to={`/orders/${order.id}`} style={linkStyle}>{order.isActive ? 'Ativo' : 'Cancelado'}</Link></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+      {/* 6. A nova Tabela MUI, envolvida por um Paper para um visual melhor */}
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID Pedido</TableCell>
+              <TableCell>ID Cliente</TableCell>
+              <TableCell>Data do Pedido</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {orders.map((order) => (
+              <TableRow
+                key={order.id}
+                hover // Adiciona efeito de hover automaticamente
+                onClick={() => handleRowClick(order.id)} // 7. Linha inteira clicável
+                sx={{ cursor: 'pointer' }}
+              >
+                <TableCell component="th" scope="row">{order.id}</TableCell>
+                <TableCell>{order.customerId}</TableCell>
+                <TableCell>{new Date(order.orderDate).toLocaleDateString('pt-BR')}</TableCell>
+                <TableCell>
+                   <Typography 
+                     color={order.isActive ? 'green' : 'red'}
+                     sx={{ fontWeight: 'bold' }}
+                   >
+                     {order.isActive ? 'Ativo' : 'Cancelado'}
+                   </Typography>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 }
 

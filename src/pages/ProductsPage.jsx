@@ -1,78 +1,97 @@
-import {useState, useEffect} from 'react';
-import {Link} from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// Importações do Material-UI
+import {
+  Box,
+  CircularProgress,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography
+} from '@mui/material';
+
 function ProductsPage() {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    const API_URL = 'https://localhost:444/api/v1';
+  const API_URL = 'https://localhost:444/api/v1';
 
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                setLoading(true);
-                setError('');
-                const response = await axios.get(`${API_URL}/Product/active-or-not`);
-                setProducts(response.data);
-            } catch (err) {
-                console.error("Erro ao buscar produtos:", err);
-                setError('Não foi possível carregar a lista de produtos.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProducts();
-    }, []);
-
-    if (loading) {
-        return <div style={{padding: '20px'}}>Carregando lista de produtos...</div>;
-    }
-    if (error) {
-        return <div style={{color: 'red', padding: '20px'}}>{error}</div>;
-    }
-
-    const linkStyle = {
-        textDecoration: 'none',
-        color: 'inherit',
-        display: 'block',
-        padding: '10px'
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await axios.get(`${API_URL}/Product`);
+        setProducts(response.data);
+      } catch (err) {
+        setError('Não foi possível carregar a lista de produtos.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchProducts();
+  }, []);
 
-    const cellStyle = {
-        border: '1px solid #ddd',
-        padding: '0'
-    };
+  const handleRowClick = (productId) => {
+    navigate(`/products/${productId}`);
+  };
 
+  if (loading) {
     return (
-        <div>
-            <h2>Lista de Produtos</h2>
-            <table style={{width: '100%', borderCollapse: 'collapse', marginTop: '20px'}}>
-                <thead>
-                <tr style={{backgroundColor: '#f2f2f2'}}>
-                    <th style={{padding: '12px', border: '1px solid #ddd', textAlign: 'left'}}>ID Produto</th>
-                    <th style={{padding: '12px', border: '1px solid #ddd', textAlign: 'left'}}>Nome do Produto</th>
-                    <th style={{padding: '12px', border: '1px solid #ddd', textAlign: 'left'}}>Categoria</th>
-                    <th style={{padding: '12px', border: '1px solid #ddd', textAlign: 'left'}}>Preço</th>
-                    <th style={{padding: '12px', border: '1px solid #ddd', textAlign: 'left'}}>Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                    {products.map((product) => (
-                            <tr key={product.id} style={{ cursor: 'pointer' }} onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f9f9f9'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                            <td style={cellStyle}><Link to={`/products/${product.id}`} style={linkStyle}>{product.id}</Link></td>
-                            <td style={cellStyle}><Link to={`/products/${product.id}`} style={linkStyle}>{product.title}</Link></td>
-                            <td style={cellStyle}><Link to={`/products/${product.id}`} style={linkStyle}>{product.category}</Link></td>
-                            <td style={cellStyle}><Link to={`/products/${product.id}`} style={linkStyle}>${product.price.toFixed(2)}</Link></td>
-                            <td style={cellStyle}><Link to={`/products/${product.id}`} style={linkStyle}>{product.isActive ? 'Ativo' : 'Inativo'}</Link></td>
-                        </tr>
-                   ))}
-                </tbody>
-            </table>
-        </div>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
     );
+  }
+
+  if (error) {
+    return <Typography color="error">{error}</Typography>;
+  }
+
+  return (
+    <Box>
+      <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
+        Lista de Produtos
+      </Typography>
+
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID Produto</TableCell>
+              <TableCell>Título</TableCell>
+              <TableCell>Preço</TableCell>
+              <TableCell>Categoria</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {products.map((product) => (
+              <TableRow
+                key={product.id}
+                hover
+                onClick={() => handleRowClick(product.id)}
+                sx={{ cursor: 'pointer' }}
+              >
+                <TableCell>{product.id}</TableCell>
+                <TableCell>{product.title}</TableCell>
+                <TableCell>R$ {product.price.toFixed(2)}</TableCell>
+                <TableCell>{product.category}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
 }
-                                        
+
 export default ProductsPage;

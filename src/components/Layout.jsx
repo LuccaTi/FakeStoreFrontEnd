@@ -1,38 +1,33 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Link, Outlet } from 'react-router-dom';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 function Layout() {
-  const navStyle = {
-    backgroundColor: '#f8f9fa',
-    padding: '10px 20px',
-    borderBottom: '1px solid #dee2e6',
-    display: 'flex',
-    gap: '20px',
-  };
-
-  const linkStyle = {
-    textDecoration: 'none',
-    color: '#0d6efd',
-    fontWeight: 'bold',
-    fontSize: '16px',
-  };
-
-  const mainContentStyle = {
-    padding: '20px',
-  };
-
   return (
     <div>
-      <nav style={navStyle}>
-        <Link to="/" style={linkStyle}>Dashboard</Link>
-        <Link to="/orders" style={linkStyle}>Pedidos</Link>
-        <Link to="/customers" style={linkStyle}>Clientes</Link>
-        <Link to="/products" style={linkStyle}>Produtos</Link>
-      </nav>
+      {/* 1. O novo AppBar (Barra de Navegação) */}
+      <AppBar position="static">
+        <Toolbar>
+          {/* Título da Aplicação */}
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            FakeStore Dashboard
+          </Typography>
 
-      <main style={mainContentStyle}>
-        {/* O Outlet renderiza a página da rota atual aqui */}
-        <Outlet /> 
-      </main>
+          {/* 2. Botões de Navegação */}
+          <Button color="inherit" component={Link} to="/">Dashboard</Button>
+          <Button color="inherit" component={Link} to="/orders">Pedidos</Button>
+          <Button color="inherit" component={Link} to="/customers">Clientes</Button>
+          <Button color="inherit" component={Link} to="/products">Produtos</Button>
+        </Toolbar>
+      </AppBar>
+
+      {/* 3. Conteúdo Principal */}
+      <Box component="main" sx={{ p: 3 }}>
+        <Outlet />
+      </Box>
     </div>
   );
 }

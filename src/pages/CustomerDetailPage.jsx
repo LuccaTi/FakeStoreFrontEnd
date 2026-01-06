@@ -1,82 +1,104 @@
-import {useState, useEffect} from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// Importações do Material-UI
+import {
+  Box,
+  CircularProgress,
+  Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography
+} from '@mui/material';
+
 function CustomerDetailPage() {
-    const { customerId } = useParams();
+  const { customerId } = useParams();
+  const navigate = useNavigate();
+  const [customer, setCustomer] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-    const [customer, setCustomer] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+  const API_URL = 'https://localhost:444/api/v1';
 
-    const API_URL = 'https://localhost:444/api/v1';
-
-    useEffect(() => {
-        if (!customerId) return;
-
-        const fetchCustomerDetails = async () => {
-            try {
-                setLoading(true);
-                setError('');
-                const response = await axios.get(`${API_URL}/Customer/${customerId}/with-address`);
-                setCustomer(response.data);
-            } catch (err) {
-                console.error("Erro ao buscar cliente:", err);
-                setError('Não foi possível carregar os detalhes do cliente.');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchCustomerDetails();
-    }, [customerId]);
-
-    if (loading) {
-        return <div>Carregando detalhes do cliente...</div>;
-    }
-
-    if (error) {
-        return <div style={{ color: 'red' }}>{error}</div>;
-    }
-
-    if (!customer) {
-        return <div>Cliente não encontrado.</div>;
-    }
-
-    const tableStyle = {
-        width: '100%',
-        borderCollapse: 'collapse',
-        marginTop: '30px'
+  useEffect(() => {
+    // Usaremos o endpoint que já busca o cliente com seus pedidos
+    const fetchCustomerDetails = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const response = await axios.get(`${API_URL}/Customer/${customerId}/with-orders`);
+        setCustomer(response.data);
+      } catch (err) {
+        setError('Não foi possível carregar os detalhes do cliente.');
+      } finally {
+        setLoading(false);
+      }
     };
-    const thStyle = {
-        backgroundColor: '#f2f2f2',
-        padding: '12px',
-        border: '1px solid #ddd',
-        textAlign: 'left'
-    }; 
-    const tdStyle = {
-        padding: '10px',
-        border: '1px solid #ddd'
-    };
+    if (customerId) {
+      fetchCustomerDetails();
+    }
+  }, [customerId]);
 
-    return (
-        <div>
-            <h2>Detalhes do Cliente #{customerId}</h2>
-            
-            <div style={{ marginTop: '20px', lineHeight: '1.8' }}>
-                <p><strong>Primeiro nome:</strong> {customer.firstName}</p>
-                <p><strong>Sobrenome:</strong> {customer.lastName}</p>
-                <p><strong>Email:</strong> {customer.email}</p>
-                <p><strong>Telefone:</strong> {customer.phone}</p>
-                <p><strong>Cidade:</strong> {customer.address.city}</p>
-                <p><strong>Endereço:</strong> {customer.address.street}</p>
-                <p><strong>Numero:</strong> {customer.address.number}</p>
-                <p><strong>CEP:</strong> {customer.address.zipcode}</p>
-                <p><strong>Data de cadastro:</strong> {new Date(customer.dateCreate).toLocaleDateString('pt-BR')}</p>
-                <p><strong>Status:</strong> {customer.isActive ? 'Ativo' : 'Inativo'}</p>
-            </div>
-        </div>
-    );
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>;
+  if (error) return <Typography color="error">{error}</Typography>;
+  if (!customer) return <Typography>Cliente não encontrado.</Typography>;
+
+  return (
+    <Box>
+      <Typography variant="h4" gutterBottom>
+        Detalhes do Cliente: {customer.firstname} {customer.lastname}
+      </Typography>
+
+      {/* Card de Informações Pessoais */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>Informações Pessoais</Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}><Typography><strong>Email:</strong> {customer.email}</Typography></Grid>
+          <Grid item xs={12} sm={6}><Typography><strong>Telefone:</strong> {customer.phone}</Typography></Grid>
+          <Grid item xs={12} sm={6}><Typography><strong>Usuário:</strong> {customer.username}</Typography></Grid>
+          <Grid item xs={12} sm={6}><Typography><strong>Data de Cadastro:</strong> {new Date(customer.dateCreate).toLocaleDateString('pt-BR')}</Typography></Grid>
+        </Grid>
+      </Paper>
+
+      {/* Tabela de Histórico de Pedidos */}
+      <Typography variant="h5" gutterBottom>Histórico de Pedidos</Typography>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID Pedido</TableCell>
+              <TableCell>Data</TableCell>
+              <TableCell>Status</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {customer.customerOrders.map((order) => (
+              <TableRow
+                key={order.id}
+                hover
+                onClick={() => navigate(`/orders/${order.id}`)}
+                sx={{ cursor: 'pointer' }}
+              >
+                <TableCell>{order.id}</TableCell>
+                <TableCell>{new Date(order.orderDate).toLocaleDateString('pt-BR')}</TableCell>
+                <TableCell>
+                  <Typography component="span" color={order.isActive ? 'green' : 'red'}>
+                    {order.isActive ? 'Ativo' : 'Cancelado'}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
 }
 
 export default CustomerDetailPage;
